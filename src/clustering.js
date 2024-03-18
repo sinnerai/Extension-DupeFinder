@@ -1,6 +1,4 @@
 /* eslint-disable no-restricted-globals */
-
-// Assuming set-clustering is still relevant for your application logic.
 import cluster from 'set-clustering';
 
 const allowedKeys = new Set([
@@ -12,11 +10,24 @@ const allowedKeys = new Set([
     'mes_example',
 ]);
 
-// Helper function to tokenize text into sentences.
-// This is a simplistic approach; consider using an NLP library for better accuracy.
-function tokenizeIntoSentences(text) {
+// Simple memoization helper
+const memoize = (fn) => {
+    const cache = new Map();
+    return (...args) => {
+        const key = JSON.stringify(args);
+        if (cache.has(key)) {
+            return cache.get(key);
+        }
+        const result = fn(...args);
+        cache.set(key, result);
+        return result;
+    };
+};
+
+// Tokenize text into sentences with memoization
+const tokenizeIntoSentences = memoize((text) => {
     return text.split(/\.|\?|!/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
-}
+});
 
 function similarity(x, y) {
     let score = 0;
