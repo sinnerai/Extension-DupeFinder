@@ -1170,7 +1170,7 @@ function PanelBody() {
     }
   }
   react.useEffect(() => {
-    const myWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(984), __webpack_require__.b));
+    const myWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(17), __webpack_require__.b));
     // Set up event listener for messages from the worker
     myWorker.onmessage = function (event) {
       console.debug('Message received from worker', event.data);
