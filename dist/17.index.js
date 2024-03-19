@@ -423,32 +423,18 @@ var __webpack_exports__ = {};
 "use strict";
 /* harmony import */ var set_clustering__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(834);
 /* harmony import */ var set_clustering__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(set_clustering__WEBPACK_IMPORTED_MODULE_0__);
+/* eslint-disable no-restricted-globals */
+
+// Assuming set-clustering is still relevant for your application logic.
 
 const allowedKeys = new Set(['name', 'description', 'scenario', 'personality', 'first_mes', 'mes_example']);
-const cleanAndTokenizeTextCache = new Map();
-const similarityCache = new Map();
-const generateTextCacheKey = (dateAdded, key) => {
-  return "".concat(dateAdded, "-").concat(key);
-};
-const cleanAndTokenizeText = (text, dateAdded, key) => {
-  const cacheKey = generateTextCacheKey(dateAdded, key);
-  if (cleanAndTokenizeTextCache.has(cacheKey)) {
-    return cleanAndTokenizeTextCache.get(cacheKey);
-  }
-  const cleanedText = text.replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase();
-  const normalizedText = cleanedText.replace(/\s+/g, ' ').trim();
-  const tokenizedText = normalizedText.split(/[.?!]+/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
-  cleanAndTokenizeTextCache.set(cacheKey, tokenizedText);
-  return tokenizedText;
-};
-const generateCacheKey = (id1, id2) => {
-  return id1 < id2 ? "".concat(id1, "-").concat(id2) : "".concat(id2, "-").concat(id1);
-};
-const similarity = (x, y) => {
-  const cacheKey = generateCacheKey(x['date_added'], y['date_added']);
-  if (similarityCache.has(cacheKey)) {
-    return similarityCache.get(cacheKey);
-  }
+
+// Helper function to tokenize text into sentences.
+// This is a simplistic approach; consider using an NLP library for better accuracy.
+function tokenizeIntoSentences(text) {
+  return text.split(/\.|\?|!/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
+}
+function similarity(x, y) {
   let score = 0;
   let matchedKeys = 0;
   for (const key of allowedKeys) {
@@ -457,8 +443,8 @@ const similarity = (x, y) => {
     if (value1 === '' || value2 === '') {
       continue;
     }
-    const sentences1 = new Set(cleanAndTokenizeText(value1, x['date_added'], key));
-    const sentences2 = new Set(cleanAndTokenizeText(value2, y['date_added'], key));
+    const sentences1 = new Set(tokenizeIntoSentences(value1));
+    const sentences2 = new Set(tokenizeIntoSentences(value2));
     const intersection = new Set([...sentences1].filter(s => sentences2.has(s)));
     const totalUniqueSentences = new Set([...sentences1, ...sentences2]);
     if (totalUniqueSentences.size > 0) {
@@ -467,10 +453,11 @@ const similarity = (x, y) => {
       matchedKeys++;
     }
   }
-  let finalScore = matchedKeys === 0 ? 0 : score / matchedKeys;
-  similarityCache.set(cacheKey, finalScore);
-  return finalScore;
-};
+  if (matchedKeys === 0) {
+    return 0;
+  }
+  return score / matchedKeys;
+}
 self.onmessage = function (_ref) {
   let {
     data: {
@@ -478,8 +465,6 @@ self.onmessage = function (_ref) {
       characters
     }
   } = _ref;
-  similarityCache.clear();
-  cleanAndTokenizeTextCache.clear();
   const totalRuns = characters.length * (characters.length - 1);
   let run = 0;
   let percent = 0;
