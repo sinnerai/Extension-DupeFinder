@@ -425,15 +425,29 @@ var __webpack_exports__ = {};
 /* harmony import */ var set_clustering__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(set_clustering__WEBPACK_IMPORTED_MODULE_0__);
 /* eslint-disable no-restricted-globals */
 
-// Assuming set-clustering is still relevant for your application logic.
-
 const allowedKeys = new Set(['name', 'description', 'scenario', 'personality', 'first_mes', 'mes_example']);
 
-// Helper function to tokenize text into sentences.
-// This is a simplistic approach; consider using an NLP library for better accuracy.
-function tokenizeIntoSentences(text) {
+// Simple memoization helper
+const memoize = fn => {
+  const cache = new Map();
+  return function () {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+// Tokenize text into sentences with memoization
+const tokenizeIntoSentences = memoize(text => {
   return text.split(/\.|\?|!/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
-}
+});
 function similarity(x, y) {
   let score = 0;
   let matchedKeys = 0;
