@@ -12,14 +12,14 @@ const allowedKeys = new Set([
 const memoize = (fn) => {
     const cache = new Map();
 
-    return (text, dateAdded) => {
-        const key = `${dateAdded}`;
+    return (text, cacheKey) => {
+        const key = cacheKey;
 
         if (cache.has(key)) {
             return cache.get(key);
         }
 
-        const result = fn(text, dateAdded);
+        const result = fn(text, cacheKey);
 
         cache.set(key, result);
 
@@ -27,9 +27,13 @@ const memoize = (fn) => {
     };
 };
 
-const tokenizeIntoSentences = memoize((text, dateAdded) => {
+const tokenizeIntoSentences = memoize((text, cacheKey) => {
     return text.split(/\.|\?|!/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
 });
+
+const buildCacheKey = (name, field, dateAdded) => {
+    return `${name}-${field}-${dateAdded}`;
+}
 
 function similarity(x, y) {
     let score = 0;
@@ -43,8 +47,11 @@ function similarity(x, y) {
             continue;
         }
 
-        const sentences1 = new Set(tokenizeIntoSentences(value1, x.date_added));
-        const sentences2 = new Set(tokenizeIntoSentences(value2, y.date_added));
+        const cacheKey1 = buildCacheKey(x.data['name'], value1, x['date_added']);
+        const cacheKey2 = buildCacheKey(y.data['name'], value2, y['date_added']);
+
+        const sentences1 = new Set(tokenizeIntoSentences(value1, cacheKey1));
+        const sentences2 = new Set(tokenizeIntoSentences(value2, cacheKey2));
 
         const intersection = new Set([...sentences1].filter(s => sentences2.has(s)));
         const totalUniqueSentences = new Set([...sentences1, ...sentences2]);

@@ -428,19 +428,22 @@ var __webpack_exports__ = {};
 const allowedKeys = new Set(['description', 'scenario', 'personality', 'first_mes', 'mes_example']);
 const memoize = fn => {
   const cache = new Map();
-  return (text, dateAdded) => {
-    const key = "".concat(dateAdded);
+  return (text, cacheKey) => {
+    const key = cacheKey;
     if (cache.has(key)) {
       return cache.get(key);
     }
-    const result = fn(text, dateAdded);
+    const result = fn(text, cacheKey);
     cache.set(key, result);
     return result;
   };
 };
-const tokenizeIntoSentences = memoize((text, dateAdded) => {
+const tokenizeIntoSentences = memoize((text, cacheKey) => {
   return text.split(/\.|\?|!/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
 });
+const buildCacheKey = (name, field, dateAdded) => {
+  return "".concat(name, "-").concat(field, "-").concat(dateAdded);
+};
 function similarity(x, y) {
   let score = 0;
   let matchedKeys = 0;
@@ -450,8 +453,10 @@ function similarity(x, y) {
     if (value1 === '' || value2 === '') {
       continue;
     }
-    const sentences1 = new Set(tokenizeIntoSentences(value1, x.date_added));
-    const sentences2 = new Set(tokenizeIntoSentences(value2, y.date_added));
+    const cacheKey1 = buildCacheKey(x.data['name'], value1, x['date_added']);
+    const cacheKey2 = buildCacheKey(y.data['name'], value2, y['date_added']);
+    const sentences1 = new Set(tokenizeIntoSentences(value1, cacheKey1));
+    const sentences2 = new Set(tokenizeIntoSentences(value2, cacheKey2));
     const intersection = new Set([...sentences1].filter(s => sentences2.has(s)));
     const totalUniqueSentences = new Set([...sentences1, ...sentences2]);
     if (totalUniqueSentences.size > 0) {
