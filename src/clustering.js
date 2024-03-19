@@ -1,4 +1,5 @@
 import cluster from 'set-clustering';
+import anyAscii from 'any-ascii';
 
 const allowedKeys = new Set([
     'name',
@@ -23,9 +24,10 @@ const cleanAndTokenizeText = (text, dateAdded, key) => {
         return cleanAndTokenizeTextCache.get(cacheKey);
     }
 
-    const cleanedText = text.replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase();
+    const asciiText = anyAscii(text);
+    const cleanedText = asciiText.replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase();
     const normalizedText = cleanedText.replace(/\s+/g, ' ').trim();
-    const tokenizedText = normalizedText.split(/[.?!]+/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
+    const tokenizedText = normalizedText.split(' ').filter(word => word.length > 0);
 
     cleanAndTokenizeTextCache.set(cacheKey, tokenizedText);
 
